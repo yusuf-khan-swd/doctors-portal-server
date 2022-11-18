@@ -17,6 +17,21 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: 'Unauthorized Access, Header is missing' })
+  }
+  const token = authHeader.split(' ')[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decode) {
+    if (err) {
+      return res.status(401).send({ message: 'Unauthorized Access, Token is not valid' });
+    }
+    req.decode = decode;
+    next();
+  })
+}
+
 async function run() {
   try {
     const appointmentOptionCollection = client
@@ -101,8 +116,14 @@ async function run() {
       res.send(options);
     });
 
-    app.get('/bookings', async (req, res) => {
+    app.get('/bookings', verifyJWT, async (req, res) => {
+      const decode = req.decode;
       const email = req.query.email;
+
+      if (decode.email !== email) {
+        return res.status(403).send({ message: 'Forbidden Access. email is not matched' })
+      }
+
       const query = { email: email };
       const bookings = await bookingsCollection.find(query).toArray();
       res.send(bookings);
