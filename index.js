@@ -20,12 +20,12 @@ const client = new MongoClient(uri, {
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).send({ message: 'Unauthorized Access, Header is missing' })
+    return res.status(401).send({ message: 'Unauthorized Access' });
   }
   const token = authHeader.split(' ')[1];
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decode) {
     if (err) {
-      return res.status(401).send({ message: 'Unauthorized Access, Token is not valid' });
+      return res.status(403).send({ message: 'Forbidden Access' });
     }
     req.decode = decode;
     next();
@@ -117,11 +117,11 @@ async function run() {
     });
 
     app.get('/bookings', verifyJWT, async (req, res) => {
-      const decode = req.decode;
       const email = req.query.email;
+      const decodeEmail = req.decode.email;
 
-      if (decode.email !== email) {
-        return res.status(403).send({ message: 'Forbidden Access. email is not matched' })
+      if (decodeEmail !== email) {
+        return res.status(403).send({ message: 'Forbidden Access' })
       }
 
       const query = { email: email };
