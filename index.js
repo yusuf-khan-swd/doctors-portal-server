@@ -194,6 +194,12 @@ async function run() {
       return res.send({ isAdmin: true });
     });
 
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
     app.put('/users/admin/:id', verifyJWT, async (req, res) => {
       const decodedEmail = req.decode.email;
       const query = { email: decodedEmail };
@@ -213,12 +219,6 @@ async function run() {
       };
 
       const result = await usersCollection.updateOne(filter, updatedDoc, options);
-      res.send(result);
-    });
-
-    app.post('/users', async (req, res) => {
-      const user = req.body;
-      const result = await usersCollection.insertOne(user);
       res.send(result);
     });
 
