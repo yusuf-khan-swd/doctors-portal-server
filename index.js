@@ -153,6 +153,13 @@ async function run() {
       res.send(bookings);
     });
 
+    app.get("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await bookingsCollection.findOne(filter);
+      res.send(result);
+    });
+
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
 
