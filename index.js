@@ -21,12 +21,12 @@ const client = new MongoClient(uri, {
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).send({ message: 'Unauthorized Access' });
+    return res.status(401).send({ message: 'Unauthorized Access for not having header' });
   }
   const token = authHeader.split(' ')[1];
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decode) {
     if (err) {
-      return res.status(403).send({ message: 'Forbidden Access' });
+      return res.status(403).send({ message: 'Forbidden Access: Token is invalid' });
     }
     req.decode = decode;
     next();
@@ -58,7 +58,7 @@ async function run() {
       const user = await usersCollection.findOne(query);
 
       if (user.role !== 'admin') {
-        return res.status(403).send({ message: 'Forbidden access' });
+        return res.status(403).send({ message: 'Forbidden access user is not admin' });
       }
 
       next();
@@ -149,7 +149,7 @@ async function run() {
       const decodeEmail = req.decode.email;
 
       if (decodeEmail !== email) {
-        return res.status(403).send({ message: 'Forbidden Access' })
+        return res.status(403).send({ message: 'Forbidden Access! email is not matched' })
       }
 
       const query = { email: email };
